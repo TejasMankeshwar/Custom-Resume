@@ -1,0 +1,1 @@
+This file is where the AI should keep the track of what has been done and what is yet to be completed. This markdown will help the new chat understand the current structure of the application, and what is yet to be done.
