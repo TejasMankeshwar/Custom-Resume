@@ -40,9 +40,9 @@ pip install -r backend/requirements.txt
 
 Start the FastAPI application server:
 ```bash
-PYTHONPATH=. uvicorn backend.main:app --reload --port 8000
+PYTHONPATH=. uvicorn backend.main:app --reload --port 8001
 ```
-The API documentation is available at `http://localhost:8000/docs`.
+The API documentation is available at `http://localhost:8001/docs`.
 
 ### 2. Set Up the Frontend
 In a new terminal window, navigate to the frontend directory:
