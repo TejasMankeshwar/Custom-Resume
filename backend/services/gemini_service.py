@@ -19,7 +19,11 @@ class GeminiService:
         if not api_key or not api_key.strip():
             raise GeminiError("API Key is missing or empty.", retryable=False)
         # Request-scoped client, API key is not persisted on the server
-        return genai.Client(api_key=api_key.strip())
+        # Add a timeout so that the client fails fast instead of hanging on rate limit backoffs
+        return genai.Client(
+            api_key=api_key.strip(),
+            http_options={'timeout': 20.0}
+        )
 
     @staticmethod
     def validate_key(api_key: str, model_name: str = "gemini-3.5-flash") -> bool:
