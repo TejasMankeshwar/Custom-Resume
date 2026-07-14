@@ -52,6 +52,7 @@ class GeminiService:
         while attempt <= max_retries:
             try:
                 # Use selected model for structured data tasks
+                print(f"    >>> [Gemini Service] Sending structured request to model: {model_name} (Attempt {attempt+1}/{max_retries+1})...")
                 response = client.models.generate_content(
                     model=model_name,
                     contents=[prompt, content],
@@ -61,6 +62,7 @@ class GeminiService:
                         temperature=0.1 # Low temperature for analytical tasks
                     ),
                 )
+                print(f"    <<< [Gemini Service] Received response successfully from model: {model_name}.")
                 
                 # The SDK automatically validates against the schema when parsing, 
                 # but we can explicitly parse it using the Pydantic schema class.

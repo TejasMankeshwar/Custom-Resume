@@ -21,6 +21,7 @@ def analyze_job(
     x_gemini_key: str = Header(...),
     x_gemini_model: str = Header("gemini-1.5-flash")
 ):
+    print(f"\n>>> [Jobs API] Starting job analysis for Session ID: {request.session_id} using model: {x_gemini_model}")
     session = session_manager.get_session(request.session_id)
     if not session:
         raise HTTPException(status_code=404, detail={"code": "SESSION_NOT_FOUND", "message": "Session not found or expired.", "retryable": False})
