@@ -22,7 +22,7 @@ class GeminiService:
         # Add a timeout so that the client fails fast instead of hanging on rate limit backoffs
         return genai.Client(
             api_key=api_key.strip(),
-            http_options={'timeout': 20.0}
+            http_options={'timeout': 30.0}
         )
 
     @staticmethod
@@ -42,6 +42,8 @@ class GeminiService:
             err_str = str(e).lower()
             if "quota" in err_str or "exhausted" in err_str or "429" in err_str:
                 raise GeminiError("Gemini API quota exceeded or rate limited. Please try again in a minute.", retryable=True)
+            if "time" in err_str and "out" in err_str:
+                raise GeminiError("The Gemini API timed out. The service might be overloaded or your free-tier key is being rate-limited. Please wait a moment and try again.", retryable=True)
             raise GeminiError(f"Failed to validate Gemini API Key. Reason: {str(e)}", retryable=False)
 
     @staticmethod
