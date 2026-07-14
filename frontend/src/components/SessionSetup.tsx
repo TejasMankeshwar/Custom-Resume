@@ -8,7 +8,7 @@ export function SessionSetup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const { setGeminiKey, setSessionId, setWorkflowState } = useAppStore();
+  const { setGeminiKey, setSessionId, setWorkflowState, geminiModel, setGeminiModel } = useAppStore();
 
   const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +19,7 @@ export function SessionSetup() {
     
     try {
       // 1. Validate API Key
-      await validateGeminiKey(apiKey.trim());
+      await validateGeminiKey(apiKey.trim(), geminiModel);
       
       // 2. Create Session
       const sessionRes = await createSession();
@@ -46,11 +46,25 @@ export function SessionSetup() {
       
       <h2 className="text-2xl font-semibold text-center mb-2">Welcome</h2>
       <p className="text-center text-[var(--text-secondary)] mb-8 text-sm">
-        Enter your Gemini API key to start tailoring your resume. 
-        Your key is stored securely in memory and deleted when you close the tab.
+        Select a model and enter your Gemini API key to start tailoring your resume. 
+        Your key is stored securely in memory.
       </p>
 
       <form onSubmit={handleStart} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Select Model</label>
+          <select
+            value={geminiModel}
+            onChange={(e) => setGeminiModel(e.target.value)}
+            className="w-full px-4 py-2 bg-[var(--background)] border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--accent)]"
+          >
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+            <option value="gemini-3.5-pro">Gemini 3.5 Pro</option>
+            <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
+            <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview</option>
+          </select>
+        </div>
+        
         <div>
           <label className="block text-sm font-medium mb-1">Gemini API Key</label>
           <input

@@ -22,22 +22,26 @@ class GeminiService:
         return genai.Client(api_key=api_key.strip())
 
     @staticmethod
-    def validate_key(api_key: str) -> bool:
+    def validate_key(api_key: str, model_name: str = "gemini-3.5-flash") -> bool:
         """Performs a minimal request to validate the API key."""
         try:
             client = GeminiService._get_client(api_key)
-            # Use a fast, cheap model for validation
+            # Use the selected model for validation
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model=model_name,
                 contents='Respond with the word "OK" only.'
             )
-            return "OK" in response.text
+            return "ok" in response.text.lower()
         except Exception as e:
-            # Catching generic exception to prevent any leak of the raw error which might contain keys/paths
-            raise GeminiError("Failed to validate Gemini API Key. Ensure it is correct and has quota.", retryable=False)
+            # Print the actual error to the backend console for debugging without returning it to the user
+            print(f"Gemini API Validation Error: {e}")
+            err_str = str(e).lower()
+            if "quota" in err_str or "exhausted" in err_str or "429" in err_str:
+                raise GeminiError("Gemini API quota exceeded or rate limited. Please try again in a minute.", retryable=True)
+            raise GeminiError(f"Failed to validate Gemini API Key. Reason: {str(e)}", retryable=False)
 
     @staticmethod
-    def generate_structured(api_key: str, prompt: str, content: str, schema: Type[T], max_retries: int = 2) -> T:
+    def generate_structured(api_key: str, prompt: str, content: str, schema: Type[T], model_name: str = "gemini-3.5-flash", max_retries: int = 2) -> T:
         """
         Calls Gemini to generate structured output matching the provided Pydantic schema.
         Implements bounded retries with exponential backoff and jitter for transient failures.
@@ -47,9 +51,9 @@ class GeminiService:
         attempt = 0
         while attempt <= max_retries:
             try:
-                # Use gemini-2.5-flash for structured data tasks
+                # Use selected model for structured data tasks
                 response = client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model=model_name,
                     contents=[prompt, content],
                     config=genai.types.GenerateContentConfig(
                         response_mime_type="application/json",
@@ -68,17 +72,27 @@ class GeminiService:
 
             except Exception as e:
                 attempt += 1
-                
-                # Check if it's a known non-retryable error (e.g., Auth, Invalid Argument)
                 err_str = str(e).lower()
+                
+                # Print clean error details safely to the console
+                print(f"Gemini Service error during attempt {attempt}: {e}")
+                
+                # Check if it's a known non-retryable error (e.g., Auth, Invalid Argument, Model Not Found)
                 if "api key" in err_str or "unauthenticated" in err_str or "permission" in err_str or "invalid" in err_str:
-                     raise GeminiError("Authentication or Invalid Argument error occurred.", retryable=False)
+                     raise GeminiError("Authentication or Invalid Argument error occurred. Please check your API key.", retryable=False)
+                
+                if "not found" in err_str or "404" in err_str:
+                     raise GeminiError(f"Model or resource not found: {str(e)}", retryable=False)
 
                 if attempt > max_retries:
-                    raise GeminiError("Max retries exceeded while calling Gemini.", retryable=False)
+                     if "quota" in err_str or "exhausted" in err_str or "429" in err_str:
+                          raise GeminiError("Gemini API quota exceeded or rate limited. Please try again in a minute.", retryable=True)
+                     if "unavailable" in err_str or "503" in err_str or "overloaded" in err_str:
+                          raise GeminiError("Gemini service is currently overloaded or experiencing high demand. Please try again later.", retryable=True)
+                     raise GeminiError(f"Gemini request failed: {str(e)}", retryable=True)
                 
                 # Exponential backoff with jitter
                 sleep_time = (2 ** attempt) + random.uniform(0, 1)
                 time.sleep(sleep_time)
         
-        raise GeminiError("Failed to generate structured content.", retryable=False)
+        raise GeminiError("Failed to generate structured content due to persistent errors.", retryable=True)

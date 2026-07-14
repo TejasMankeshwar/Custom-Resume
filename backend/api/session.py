@@ -20,9 +20,12 @@ def create_session():
     return {"session_id": session_id, "message": "Session created successfully."}
 
 @router.post("/validate-key")
-def validate_gemini_key(x_gemini_key: str = Header(...)):
+def validate_gemini_key(
+    x_gemini_key: str = Header(...),
+    x_gemini_model: str = Header("gemini-3.5-flash")
+):
     try:
-        is_valid = GeminiService.validate_key(x_gemini_key)
+        is_valid = GeminiService.validate_key(x_gemini_key, x_gemini_model)
         if is_valid:
             return {"message": "Key is valid."}
         else:
@@ -30,7 +33,15 @@ def validate_gemini_key(x_gemini_key: str = Header(...)):
     except HTTPException:
         raise
     except GeminiError as e:
-        raise HTTPException(status_code=401, detail={"code": "INVALID_KEY", "message": str(e), "retryable": False})
+        status_code = 429 if e.retryable else 401
+        raise HTTPException(
+            status_code=status_code,
+            detail={
+                "code": "QUOTA_EXCEEDED" if e.retryable else "INVALID_KEY",
+                "message": str(e),
+                "retryable": e.retryable
+            }
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail={"code": "INTERNAL_ERROR", "message": "Validation failed.", "retryable": False})
 

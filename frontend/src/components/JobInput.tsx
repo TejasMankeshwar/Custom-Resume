@@ -9,7 +9,7 @@ export function JobInput() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const { sessionId, geminiKey, setJdAnalysis, setMatchAnalysis, setWorkflowState } = useAppStore();
+  const { sessionId, geminiKey, geminiModel, setJdAnalysis, setMatchAnalysis, setWorkflowState } = useAppStore();
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +20,7 @@ export function JobInput() {
     setWorkflowState('ANALYZING');
     
     try {
-      const result = await analyzeJob(sessionId, geminiKey, jobDescription.trim(), jobTitle.trim());
+      const result = await analyzeJob(sessionId, geminiKey, geminiModel, jobDescription.trim(), jobTitle.trim());
       
       setJdAnalysis(result.jd_analysis);
       setMatchAnalysis(result.match_analysis);

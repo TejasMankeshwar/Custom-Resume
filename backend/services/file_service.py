@@ -55,4 +55,34 @@ class FileService:
         safe_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', filename)
         return safe_name
 
+    @staticmethod
+    def write_generated_resume(session_id: str, content: str) -> str:
+        session_dir = FileService.get_safe_session_dir(session_id)
+        session_dir.mkdir(parents=True, exist_ok=True)
+        out_path = session_dir / "resume.tex"
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        return str(out_path)
+
+    @staticmethod
+    def read_generated_resume(session_id: str) -> str:
+        session_dir = FileService.get_safe_session_dir(session_id)
+        out_path = session_dir / "resume.tex"
+        if not out_path.exists():
+            raise MasterResumeError("Generated resume not found.")
+        with open(out_path, "r", encoding="utf-8") as f:
+            return f.read()
+
+    @staticmethod
+    def delete_session_dir(session_id: str) -> bool:
+        import shutil
+        try:
+            session_dir = FileService.get_safe_session_dir(session_id)
+            if session_dir.exists() and session_dir.is_dir():
+                shutil.rmtree(session_dir)
+                return True
+        except Exception:
+            pass
+        return False
+
 file_service = FileService()

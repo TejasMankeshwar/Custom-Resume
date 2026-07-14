@@ -6,6 +6,7 @@ import { SessionSetup } from './components/SessionSetup';
 import { JobInput } from './components/JobInput';
 import { AnalysisView } from './components/AnalysisView';
 import { ChangesReview } from './components/ChangesReview';
+import { ResumePreview } from './components/ResumePreview';
 
 function App() {
   const { workflowState } = useAppStore();
@@ -35,25 +36,30 @@ function App() {
       
       <div className="max-w-[1400px] mx-auto px-6 py-8">
         {/* Simple Workflow Progress Indicator */}
-        <div className="flex items-center justify-center gap-4 mb-12 text-sm overflow-x-auto whitespace-nowrap">
-          <div className={`flex items-center gap-2 ${workflowState === 'SESSION_SETUP' ? 'text-[var(--accent)] font-medium' : 'text-[var(--text-muted)]'}`}>
-            <span>1. Setup</span>
+        <div className="flex items-center md:justify-center gap-2 md:gap-4 mb-8 md:mb-12 text-xs md:text-sm overflow-x-auto whitespace-nowrap pb-4 w-full">
+          <div className={`flex items-center gap-1 md:gap-2 shrink-0 ${workflowState === 'SESSION_SETUP' ? 'text-[var(--accent)] font-medium' : 'text-[var(--text-muted)]'}`}>
+            <span className="w-6 h-6 rounded-full flex items-center justify-center border border-current">1</span>
+            <span className="hidden sm:inline">Setup</span>
           </div>
-          <div className="w-8 h-px bg-[var(--border-strong)]" />
-          <div className={`flex items-center gap-2 ${workflowState === 'JOB_INPUT' ? 'text-[var(--accent)] font-medium' : 'text-[var(--text-muted)]'}`}>
-            <span>2. Job Input</span>
+          <div className="w-4 md:w-8 h-px bg-[var(--border-strong)] shrink-0" />
+          <div className={`flex items-center gap-1 md:gap-2 shrink-0 ${workflowState === 'JOB_INPUT' ? 'text-[var(--accent)] font-medium' : 'text-[var(--text-muted)]'}`}>
+            <span className="w-6 h-6 rounded-full flex items-center justify-center border border-current">2</span>
+            <span className="hidden sm:inline">Job Input</span>
           </div>
-          <div className="w-8 h-px bg-[var(--border-strong)]" />
-          <div className={`flex items-center gap-2 ${['ANALYSIS_READY', 'ANALYZING', 'GENERATING_CHANGES'].includes(workflowState) ? 'text-[var(--accent)] font-medium' : 'text-[var(--text-muted)]'}`}>
-            <span>3. Analysis</span>
+          <div className="w-4 md:w-8 h-px bg-[var(--border-strong)] shrink-0" />
+          <div className={`flex items-center gap-1 md:gap-2 shrink-0 ${['ANALYSIS_READY', 'ANALYZING', 'GENERATING_CHANGES'].includes(workflowState) ? 'text-[var(--accent)] font-medium' : 'text-[var(--text-muted)]'}`}>
+            <span className="w-6 h-6 rounded-full flex items-center justify-center border border-current">3</span>
+            <span className="hidden sm:inline">Analysis</span>
           </div>
-          <div className="w-8 h-px bg-[var(--border-strong)]" />
-          <div className={`flex items-center gap-2 ${workflowState === 'REVIEWING_CHANGES' ? 'text-[var(--accent)] font-medium' : 'text-[var(--text-muted)]'}`}>
-            <span>4. Review Changes</span>
+          <div className="w-4 md:w-8 h-px bg-[var(--border-strong)] shrink-0" />
+          <div className={`flex items-center gap-1 md:gap-2 shrink-0 ${workflowState === 'REVIEWING_CHANGES' ? 'text-[var(--accent)] font-medium' : 'text-[var(--text-muted)]'}`}>
+            <span className="w-6 h-6 rounded-full flex items-center justify-center border border-current">4</span>
+            <span className="hidden sm:inline">Review Changes</span>
           </div>
-          <div className="w-8 h-px bg-[var(--border-strong)]" />
-          <div className={`flex items-center gap-2 ${workflowState === 'PREVIEW_READY' ? 'text-[var(--accent)] font-medium' : 'text-[var(--text-muted)]'}`}>
-            <span>5. Preview</span>
+          <div className="w-4 md:w-8 h-px bg-[var(--border-strong)] shrink-0" />
+          <div className={`flex items-center gap-1 md:gap-2 shrink-0 ${workflowState === 'PREVIEW_READY' ? 'text-[var(--accent)] font-medium' : 'text-[var(--text-muted)]'}`}>
+            <span className="w-6 h-6 rounded-full flex items-center justify-center border border-current">5</span>
+            <span className="hidden sm:inline">Preview</span>
           </div>
         </div>
 
@@ -62,13 +68,7 @@ function App() {
           {(workflowState === 'JOB_INPUT' || workflowState === 'ANALYZING') && <JobInput />}
           {(workflowState === 'ANALYSIS_READY' || workflowState === 'GENERATING_CHANGES') && <AnalysisView />}
           {workflowState === 'REVIEWING_CHANGES' && <ChangesReview />}
-          {workflowState === 'PREVIEW_READY' && (
-             <div className="p-8 border border-[var(--border)] rounded-lg bg-[var(--surface)] text-center">
-               <h2 className="text-xl font-semibold mb-2">Phase 2 Complete</h2>
-               <p className="text-[var(--text-secondary)]">The AI workflow and validation logic are fully implemented.</p>
-               <p className="text-[var(--text-muted)] text-sm mt-4">Phase 3 will cover the actual LaTeX compilation and generation.</p>
-             </div>
-          )}
+          {workflowState === 'PREVIEW_READY' && <ResumePreview />}
         </main>
       </div>
     </div>

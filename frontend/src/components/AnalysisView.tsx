@@ -4,7 +4,7 @@ import { generateChanges } from '../api';
 import { Target, Loader2, Wand2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export function AnalysisView() {
-  const { jdAnalysis, matchAnalysis, sessionId, geminiKey, setWorkflowState, setTailoringResult } = useAppStore();
+  const { jdAnalysis, matchAnalysis, sessionId, geminiKey, geminiModel, setWorkflowState, setTailoringResult } = useAppStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,7 +18,7 @@ export function AnalysisView() {
     setWorkflowState('GENERATING_CHANGES');
     
     try {
-      const result = await generateChanges(sessionId, geminiKey);
+      const result = await generateChanges(sessionId, geminiKey, geminiModel);
       setTailoringResult(result);
       setWorkflowState('REVIEWING_CHANGES');
     } catch (err: any) {
@@ -41,9 +41,25 @@ export function AnalysisView() {
         <div className="p-6 border border-[var(--border)] rounded-xl bg-[var(--surface)] shadow-sm flex flex-col items-center justify-center text-center">
           <Target className="w-8 h-8 text-[var(--accent)] mb-2" />
           <h3 className="text-sm font-medium text-[var(--text-secondary)]">Initial Match Score</h3>
-          <div className={`text-5xl font-bold mt-2 ${scoreColor}`}>
-            {matchAnalysis.total_score}%
+          
+          <div className="relative w-32 h-32 mt-4 mb-2 flex items-center justify-center">
+            {/* Background Circle */}
+            <svg className="w-full h-full transform -rotate-90 absolute top-0 left-0">
+              <circle cx="64" cy="64" r="56" fill="transparent" stroke="currentColor" strokeWidth="8" className="text-[var(--surface-elevated)]" />
+              {/* Progress Circle */}
+              <circle 
+                cx="64" cy="64" r="56" fill="transparent" stroke="currentColor" strokeWidth="8"
+                strokeDasharray="351.8" /* 2 * PI * 56 = 351.85 */
+                strokeDashoffset={351.8 - (351.8 * matchAnalysis.total_score) / 100}
+                strokeLinecap="round"
+                className={`${scoreColor} transition-all duration-1000 ease-out`}
+              />
+            </svg>
+            <div className={`text-4xl font-bold ${scoreColor} relative z-10`}>
+              {matchAnalysis.total_score}
+            </div>
           </div>
+          
           <p className="text-xs text-[var(--text-muted)] mt-2">Deterministic score based on keywords</p>
         </div>
 

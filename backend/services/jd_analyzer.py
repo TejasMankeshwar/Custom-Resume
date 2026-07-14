@@ -4,7 +4,7 @@ from backend.prompts.jd_analysis import JD_ANALYSIS_SYSTEM_PROMPT
 
 class JDAnalyzer:
     @staticmethod
-    def analyze(api_key: str, job_description: str, job_title: str = "") -> JobAnalysisSchema:
+    def analyze(api_key: str, job_description: str, job_title: str = "", model_name: str = "gemini-3.5-flash") -> JobAnalysisSchema:
         if not job_description or not job_description.strip():
             raise ValueError("Job Description cannot be empty.")
             
@@ -16,7 +16,8 @@ class JDAnalyzer:
             api_key=api_key,
             prompt=JD_ANALYSIS_SYSTEM_PROMPT,
             content=content,
-            schema=JobAnalysisSchema
+            schema=JobAnalysisSchema,
+            model_name=model_name
         )
         
         return analysis

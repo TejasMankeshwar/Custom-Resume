@@ -10,9 +10,9 @@ def test_validate_key_success(mock_validate):
     mock_validate.return_value = True
     from backend.api.session import validate_gemini_key
     
-    response = validate_gemini_key("test_key")
+    response = validate_gemini_key("test_key", "gemini-3.5-flash")
     assert response["message"] == "Key is valid."
-    mock_validate.assert_called_once_with("test_key")
+    mock_validate.assert_called_once_with("test_key", "gemini-3.5-flash")
 
 @patch('backend.services.gemini_service.GeminiService.validate_key')
 def test_validate_key_failure(mock_validate):

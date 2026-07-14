@@ -16,14 +16,23 @@ class JobAnalyzeRequest(BaseModel):
     job_title: Optional[str] = ""
 
 @router.post("/analyze")
-def analyze_job(request: JobAnalyzeRequest, x_gemini_key: str = Header(...)):
+def analyze_job(
+    request: JobAnalyzeRequest, 
+    x_gemini_key: str = Header(...),
+    x_gemini_model: str = Header("gemini-1.5-flash")
+):
     session = session_manager.get_session(request.session_id)
     if not session:
         raise HTTPException(status_code=404, detail={"code": "SESSION_NOT_FOUND", "message": "Session not found or expired.", "retryable": False})
 
     try:
         # 1. Analyze JD
-        jd_analysis = jd_analyzer.analyze(x_gemini_key, request.job_description, request.job_title)
+        jd_analysis = jd_analyzer.analyze(
+            x_gemini_key, 
+            request.job_description, 
+            request.job_title,
+            model_name=x_gemini_model
+        )
         
         # 2. Parse master resume
         raw_resume = file_service.read_master_resume()
@@ -42,7 +51,8 @@ def analyze_job(request: JobAnalyzeRequest, x_gemini_key: str = Header(...)):
         }
         
     except GeminiError as e:
-        raise HTTPException(status_code=500, detail={"code": "GEMINI_ERROR", "message": str(e), "retryable": e.retryable})
+        status_code = 429 if e.retryable else 500
+        raise HTTPException(status_code=status_code, detail={"code": "GEMINI_ERROR", "message": str(e), "retryable": e.retryable})
     except MasterResumeError as e:
         raise HTTPException(status_code=500, detail={"code": "MASTER_RESUME_ERROR", "message": str(e), "retryable": False})
     except Exception as e:
